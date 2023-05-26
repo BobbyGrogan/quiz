@@ -10,45 +10,66 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Retrieve the a_id values from the answers table
-$answers_sql = "SELECT a_id FROM answers";
-$answers_result = $conn->query($answers_sql);
+$tables_with_length = array(); // List to store table names
 
-if ($answers_result->num_rows > 0) {
-    while ($answers_row = $answers_result->fetch_assoc()) {
-        $a_id = $answers_row["a_id"];
-        
-        // Count the number of qans__ tables containing the a_id
-        $tables_sql = "SHOW TABLES LIKE 'qans__%'";
-        $tables_result = $conn->query($tables_sql);
-        
-        $included_count = 0; // Counter for the number of qans__ tables including the a_id
-        
-        if ($tables_result->num_rows > 0) {
-            while ($table_row = $tables_result->fetch_row()) {
-                $table_name = $table_row[0];
-                
-                // Check if the a_id exists in the current qans__ table
-                $check_sql = "SELECT COUNT(*) AS count FROM $table_name WHERE a_id = $a_id";
-                $check_result = $conn->query($check_sql);
-                
-                if ($check_result->num_rows > 0) {
-                    $check_row = $check_result->fetch_assoc();
-                    $count = $check_row["count"];
-                    
-                    // Increment the counter if the a_id is found in the current qans__ table
-                    if ($count > 0) {
-                        $included_count++;
-                    }
-                }
+// Iterate through qans__ tables
+$table_counter = 1;
+
+while (true) {
+    $table_name = "qans__" . $table_counter;
+
+    // Check if the table exists
+    $check_table_sql = "SHOW TABLES LIKE '$table_name'";
+    $check_table_result = $conn->query($check_table_sql);
+
+    if ($check_table_result->num_rows > 0) {
+        // Get the length (number of rows) of the table
+        $length_sql = "SELECT COUNT(*) AS length FROM $table_name";
+        $length_result = $conn->query($length_sql);
+
+        if ($length_result->num_rows > 0) {
+            $length_row = $length_result->fetch_assoc();
+            $table_length = $length_row["length"];
+
+            if ($table_length > 0) {
+                $tables_with_length[] = $table_name;
             }
         }
+    } else {
+        // Break the loop if the table doesn't exist
+        break;
+    }
 
-        $num_of_questions_stmt = "UPDATE answers SET q_included = '$included_count' WHERE a_id = '$a_id'";
-        $send_num_of_questions = $conn->query($num_of_questions_stmt);
+    $table_counter++;
+}
 
+$a_id_counts = array(); // Array to store a_id counts
+
+// Count how many times each a_id appears across all tables
+foreach ($tables_with_length as $table_name) {
+    $count_sql = "SELECT a_id, COUNT(*) AS count FROM $table_name GROUP BY a_id";
+    $count_result = $conn->query($count_sql);
+
+    if ($count_result->num_rows > 0) {
+        while ($count_row = $count_result->fetch_assoc()) {
+            $a_id = $count_row["a_id"];
+            $count = $count_row["count"];
+
+            if (!isset($a_id_counts[$a_id])) {
+                $a_id_counts[$a_id] = 0;
+            }
+
+            $a_id_counts[$a_id] += $count;
+        }
     }
 }
 
+// Print the a_id counts
+foreach ($a_id_counts as $a_id => $count) {
+    $update_included_stmt = "UPDATE answers SET q_included = $count WHERE a_id = $a_id";
+    $send_update = $conn->query($update_included_stmt);
+}    
+
 $conn->close();
+
 ?>

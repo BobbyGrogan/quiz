@@ -78,11 +78,12 @@ function addJustQuestion($question, $conn) {
             $q_anwrs_table_name = "qans__" . $q_id;
             $create_q_anwrs_table_sql = "CREATE TABLE $q_anwrs_table_name (
                 qa_id INT AUTO_INCREMENT PRIMARY KEY,
-                answer VARCHAR(255),
-                is_true INT(8),
+                a_id INT(32),
+                is_true INT(8) DEFAULT 0,
                 asked INT DEFAULT 0,
                 correct INT DEFAULT 0,
-                time_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+                time_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+                FOREIGN KEY (a_id) REFERENCES answers (a_id)
             )";
             $create_q_anwrs_table_result = $conn->query($create_q_anwrs_table_sql);
     
@@ -201,24 +202,117 @@ function handleAnswers($wrongs, $conn) {
     return $result;
 }
 
-function noCurrent($exists, $value, $topic, $topicname, $conn) {
-    if ($exists == 0) {
-        if ($question != "NULL") {
-            $for_return = array();
+function checkQuestionInCategory($question_id, $category_id, $conn) {
+    $category_table_name = 'cat__' . $category_id;
+    $question_cat_table_name = 'qcats__' . $question_id;
 
-            $to_add_stmt = "INSERT INTO `$topic` ($topicname) VALUES ('$value')";
-            $for_return['stmt'] = $to_add_stmt;
-            $for_return['new_q_id'] = 1;
+    // Check if the category table exists
+    $check_table_sql = "SHOW TABLES LIKE '$category_table_name'";
+    $check_table_result = $conn->query($check_table_sql);
 
-            return $for_return;
+    if ($check_table_result->num_rows > 0) {
+        // Category table exists, check if question ID is present
+        $check_question_sql = "SELECT cq_id FROM `$category_table_name` WHERE q_id = $question_id";
+        $check_question_result = $conn->query($check_question_sql);
+
+        if ($check_question_result->num_rows > 0) {
+            // Question ID found in the category table
+            return "Question ID " . $question_id . " found in the category table with the Category ID " . $category_table_name;
         } else {
-            return 0;
+
+            // Insert question ID into category table
+            $put_q_in_cat_stmt = "INSERT INTO `$category_table_name` (`q_id`) VALUES ($question_id)";
+            $put_q_in_cat = $conn->query($put_q_in_cat_stmt);
+
+            // Insert category ID into question's category table
+            $put_cat_in_q_stmt = "INSERT INTO `$question_cat_table_name` (`cat_id`) VALUES ($category_id)";
+            $put_cat_in_q = $conn->query($put_cat_in_q_stmt);
+
+            return "Question ID " . $question_id . " was added to the category table with the Category ID " . $category_id;
         }
     } else {
-        return 0;
+        // Category table does not exist
+        return "Category table does not exist";
     }
 }
 
+function addAnswers($answers, $conn) {
+    $all_a_ids = array();
+
+    foreach ($answers as $oneanswer) {
+        if ($oneanswer['exists'] == 1) {
+            $all_a_ids[] = $oneanswer['a_id'];
+        } elseif ($oneanswer['exists'] == 0) {
+            $a = $oneanswer['answer'];
+            $new_answer_stmt = "INSERT INTO answers (answer) VALUES ('$a')";
+            $new_answer = $conn->query($new_answer_stmt); // Use query() method to execute the SQL statement
+            $new_a_id = $conn->insert_id;
+            $all_a_ids[] = $new_a_id;
+
+            echo $a . " has been added to answers with ID " . $new_a_id . "<br>";
+        }
+    }
+    return $all_a_ids;
+}
+
+function handleAndAddCorrect($correct, $questionid, $conn) {
+    $item = trim($correct); // Remove leading/trailing whitespace
+    // Check if $correct is numeric
+    if (is_numeric($item)) {
+        // Query the answers table to get the answer corresponding to $correct
+        $query = "SELECT answer FROM answers WHERE a_id = $item";
+        $result = $conn->query($query);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $a_id = $item;
+            $item = $row['answer'];
+        //    echo "Answer: $item";
+        } else {
+            return "No answer found for a_id: $item";
+        }
+    } else {
+        // Query the answers table to see if $correct matches any answer values
+        $query = "SELECT a_id FROM answers WHERE answer = '$item'";
+        $result = $conn->query($query);
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $a_id = $row['a_id'];
+         //   echo "a_id: $a_id";
+
+        } else {
+            // Add the answer to the answers table
+            $add_query = "INSERT INTO answers (answer) VALUES ('$item')";
+            if ($conn->query($add_query) === TRUE) {
+                $a_id = $conn->insert_id;
+           //     echo "Added answer: $item with a_id: $a_id";
+            } else {
+                return "Error adding answer: $item";
+            }
+        }
+    }
+    // Check if $a_id exists in qans__ table
+    $qans_table = "qans__" . $questionid;
+    $qans_query = "SELECT * FROM $qans_table WHERE a_id = $a_id";
+    $qans_result = $conn->query($qans_query);
+    if ($qans_result->num_rows > 0) {
+        $correct_row = $qans_result->fetch_assoc();
+        if ($correct_row['is_true']!=1) {
+            $qans_new = "UPDATE $qans_table SET is_true = 1 WHERE a_id = $a_id";
+            $send_qans_new = $conn->query($qans_new);
+            return "$item was in $qans_table and now set to true";                        
+        }
+        else {
+            return "$item is in $qans_table and set to true"; 
+        }
+    }
+    else {
+        $qans_new = "INSERT INTO $qans_table (a_id, is_true) VALUES ($a_id, 1)";
+        $send_qans_new = $conn->query($qans_new);
+        return $item . " has been inserted into " . $qans_table . " and set as true";
+    }
+}
 
 
 ?>

@@ -25,8 +25,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// SQL query to retrieve the cat_id, name, and num_of_questions from the table
-$query = "SELECT cat_id, name, num_of_questions FROM categories";
+// SQL query to retrieve the answer and q_included from the table
+$query = "SELECT answer, q_included, a_id FROM answers";
 
 // Execute the query
 $result = $conn->query($query);
@@ -35,7 +35,7 @@ $result = $conn->query($query);
 if ($result->num_rows > 0) {
     // Loop through each row and print the data
     while ($row = $result->fetch_assoc()) {
-        echo "Category ID: " . $row["cat_id"] . "<br> Category name: <strong>" . $row["name"] . "</strong><br> Number of questions in category: " . $row["num_of_questions"] . "<br><br>";
+        echo "Answer: " . $row["answer"] . "<br> q_included: " . $row["q_included"] . "<br>a_id: " . $row['a_id'] . "<br><br>";
     }
 } else {
     echo "No rows found.";
