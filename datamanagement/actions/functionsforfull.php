@@ -258,7 +258,7 @@ function addAnswers($answers, $conn) {
 function handleAndAddCorrect($correct, $questionid, $conn) {
     $item = trim($correct); // Remove leading/trailing whitespace
     // Check if $correct is numeric
-    if (is_numeric($item)) {
+    /* if (is_numeric($item)) {
         // Query the answers table to get the answer corresponding to $correct
         $query = "SELECT answer FROM answers WHERE a_id = $item";
         $result = $conn->query($query);
@@ -271,7 +271,7 @@ function handleAndAddCorrect($correct, $questionid, $conn) {
         } else {
             return "No answer found for a_id: $item";
         }
-    } else {
+    } else { */
         // Query the answers table to see if $correct matches any answer values
         $query = "SELECT a_id FROM answers WHERE answer = '$item'";
         $result = $conn->query($query);
@@ -290,7 +290,7 @@ function handleAndAddCorrect($correct, $questionid, $conn) {
             } else {
                 return "Error adding answer: $item";
             }
-        }
+        // }
     }
     // Check if $a_id exists in qans__ table
     $qans_table = "qans__" . $questionid;

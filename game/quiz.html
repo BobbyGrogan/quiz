@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz</title>
+    <link href="./css/styles.css" rel="stylesheet">
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+          // Get the URL parameter 'name'
+          const urlParams = new URLSearchParams(window.location.search);
+          const categoryName = urlParams.get('name');
+    
+          // Capitalize each word in the category name
+          const capitalizedCategoryName = categoryName
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    
+          // Create the HTML element
+          const link = document.createElement('a');
+          link.href = `quiz.html?name=${categoryName}`;
+          const heading = document.createElement('p');
+          heading.textContent = capitalizedCategoryName;
+          link.appendChild(heading);
+    
+          // Find the quiz-title div
+          const quizTitleDiv = document.querySelector('.quiz-title');
+    
+          // Append the element to the quiz-title div
+          quizTitleDiv.appendChild(link);
+        });
+    </script>
+</head>
+<body>
+    <div class="navbar">
+        <a href="./categories.html">All Categories</a>
+    </div>
+
+    <div class="quiz-container">
+        <div class="quiz-title"></div>
+        <div id="question-container"></div>
+        <div class="quiz-progress">
+            <span id="current-question">0</span> / <span id="total-questions">0</span>
+        </div>
+        <div id="quiz-feedback" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Retrieve the value of the 'name' variable from the query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = urlParams.get('name');
+        console.log('name:', name);
+
+        // Use the retrieved value to make an AJAX request to fetch the category's cat_id
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './php/get_cat_id.php?name=' + name, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Handle the response here
+                const cat_id = xhr.responseText;
+                loadQuiz(cat_id);
+            }
+        };
+        xhr.send();
+
+        // Function to load the quiz
+        function loadQuiz(cat_id) {
+            const xhr2 = new XMLHttpRequest();
+            xhr2.open('GET', './php/get_category_questions.php?cat_id=' + cat_id, true);
+            xhr2.onreadystatechange = function() {
+                if (xhr2.readyState === 4 && xhr2.status === 200) {
+                    // Handle the response here
+                    const quizJson = JSON.parse(xhr2.responseText);
+                    console.log(quizJson);
+                    initializeQuiz(quizJson);
+                }
+            };
+            xhr2.send();
+        }
+
+        // Function to initialize the quiz
+        function initializeQuiz(quizJson) {
+            // Shuffle the quizJson array to randomize the order of questions
+            shuffle(quizJson);
+            const questionContainer = document.getElementById('question-container');
+            const totalQuestions = 10; //quizJson.length;
+            const currentQuestionElement = document.getElementById('current-question');
+            const totalQuestionsElement = document.getElementById('total-questions');
+            const quizFeedbackElement = document.getElementById('quiz-feedback');
+            let currentQuestionIndex = 0;
+            let correctAnswersCount = 0;
+
+            function renderQuestion() {
+                const question = quizJson[currentQuestionIndex];
+                console.log("Current question: ", question);
+                question.startTime = new Date();
+
+                const options = question.options.map((option) => {
+                    return {
+                        value: option === question.correct_answer ? '1' : '0',
+                        text: option
+                    };
+                });
+
+                // Randomize the order of the options and ensure the correct answer is included
+                let randomizedOptions = shuffle(options);
+
+                // Find the index of the correct answer in the randomized options
+                const correctAnswerIndex = randomizedOptions.findIndex((option) => option.value === '1');
+
+                // Check if the correct answer is found
+                if (correctAnswerIndex !== -1) {
+                    // Remove the correct answer from its original position
+                    const correctAnswer = randomizedOptions.splice(correctAnswerIndex, 1)[0];
+
+                    // Shuffle the remaining options again
+                    randomizedOptions = shuffle(randomizedOptions);
+
+                    // Generate a random index to insert the correct answer (within the first four positions)
+                    const randomIndex = Math.floor(Math.random() * 4);
+
+                    // Insert the correct answer at the randomly generated index
+                    randomizedOptions.splice(randomIndex, 0, correctAnswer);
+                }
+
+                const questionHtml = `
+                <div class="question">
+                    <p>${question.question}</p>
+                    <ul style="list-style: none; padding-left: 0;">
+                    ${randomizedOptions.slice(0, 4).map((option, index) => `
+                        <li>
+                        <input type="radio" name="answer" id="answer-${index}" value="${option.value}">
+                        <label for="answer-${index}">${option.text}</label>
+                        </li>
+                    `).join('')}
+                    </ul>
+                </div>
+                `;
+
+                questionContainer.innerHTML = questionHtml;
+                currentQuestionElement.textContent = currentQuestionIndex + 1;
+                totalQuestionsElement.textContent = totalQuestions;
+                quizFeedbackElement.style.display = 'none';
+
+                // Add event listener to all answer options
+                const answerInputs = questionContainer.querySelectorAll('input[type="radio"]');
+                answerInputs.forEach((input) => {
+                    input.addEventListener('change', evaluateAnswer);
+                });
+            }
+
+            function evaluateAnswer() {
+                const selectedAnswer = document.querySelector('input[name="answer"]:checked').value;
+
+                const selectedInput = document.querySelector('input[name="answer"]:checked');
+                const selectedLabel = questionContainer.querySelector(`label[for="${selectedInput.id}"]`);
+                const hitAnswer = selectedLabel.textContent.trim();
+
+                const question = quizJson[currentQuestionIndex];
+                const correctAnswer = question.options.find((option) => option === question.correct_answer);
+                const category = name;
+                const timeTaken = new Date() - question.startTime;
+                const questionIndex = currentQuestionIndex; // Get the question index
+
+                if (selectedAnswer === '1') {
+                    correctAnswersCount++;
+                    const selectedLabel = document.querySelector('input[name="answer"]:checked + label');
+                    selectedLabel.style.backgroundColor = '#597C31'; // Set the selected answer to green
+                } else {
+                    const selectedLabel = document.querySelector('input[name="answer"]:checked + label');
+                    selectedLabel.style.backgroundColor = '#FE4300'; // Set the selected answer to red
+                    const correctLabel = document.querySelector('input[value="1"] + label');
+                    correctLabel.style.backgroundColor = '#597C31'; // Set the correct answer to green
+                    correctLabel.style.color = '#fff'; // Set the color of the correct input to white
+                }
+
+                // Disable all answer options
+                const answerInputs = questionContainer.querySelectorAll('input[type="radio"]');
+                answerInputs.forEach((input) => {
+                    input.disabled = true;
+                });
+
+                // Execute the update_questions_log.php script
+                // Execute the insert_questions_log.php script
+                    const xhr4 = new XMLHttpRequest();
+                    const params = `question=${encodeURIComponent(question.question)}&hitAnswer=${encodeURIComponent(hitAnswer)}&correctAnswer=${encodeURIComponent(correctAnswer)}&category=${encodeURIComponent(category)}&timeTaken=${encodeURIComponent(timeTaken)}&questionIndex=${encodeURIComponent(questionIndex)}`;
+                    xhr4.open('GET', `./php/update_questions_log.php?${params}`, true);
+                    xhr4.onreadystatechange = function() {
+                        if (xhr4.readyState === 4 && xhr4.status === 200) {
+                            console.log(xhr4.responseText); // Log the response if needed
+                        }
+                    };
+                    xhr4.send();
+
+
+                setTimeout(function () {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < totalQuestions) {
+                        renderQuestion();
+                    } else {
+                        showResults();
+                    }
+                }, 1000); // Wait for 0.5 seconds before moving to the next question
+            }
+
+            function showResults() {
+                const percentage = Math.round((correctAnswersCount / totalQuestions) * 100);
+                const feedback = `You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct)`;
+                questionContainer.innerHTML = feedback;
+            }
+
+            // Fisher-Yates shuffle algorithm
+            function shuffle(array) {
+                let currentIndex = array.length, temporaryValue, randomIndex;
+                while (0 !== currentIndex) {
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex -= 1;
+                    temporaryValue = array[currentIndex];
+                    array[currentIndex] = array[randomIndex];
+                    array[randomIndex] = temporaryValue;
+                }
+                return array;
+            }
+
+            renderQuestion();
+        }
+    </script>
+</body>
+</html>

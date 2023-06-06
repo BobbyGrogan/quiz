@@ -1,0 +1,162 @@
+/* FROM QUIZ */
+
+@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300&display=swap');
+
+html {
+            font-size: none;
+            background-color: #9EB28F;
+        }
+
+        body {
+            font-family: 'Libre Franklin', sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            font-size: 200%;
+        }
+        
+        .navbar {
+            background-color: #005172;
+            color: #fff;
+            padding: 10px;
+        }
+        
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+        
+        .quiz-container {
+           /* background-color: #fff;
+            border: 1px solid #ccc; */
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            margin: 0 auto;
+            max-width: 1200px; /* Increased the max-width for a bigger question container */
+        }
+        
+        .quiz-container h2 {
+            margin-top: 0;
+            text-transform: capitalize; /* Capitalized the quiz title */
+        }
+        
+        .question {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .question p {
+            margin-bottom: 10px;
+        }
+        
+        .question ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .question li {
+            margin-bottom: 10px;
+        }
+        
+        .question input[type="radio"] {
+            display: none;
+        }
+        
+        .question label {
+            display: block;
+            margin-left: -20px;
+            width: calc(100% + 17px); /* Set answer options to full width */
+            padding: 8px 12px;
+            background-color: #DAD7CB;
+            /* border: 2px solid #d3daba; */
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .question input[type="radio"]:checked + label {
+            background-color: #337ab7;
+            color: #fff;
+            border-color: #337ab7;
+        }
+        
+        .quiz-progress {
+            margin-bottom: 10px;
+        }
+        
+        .quiz-feedback {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        
+        .quiz-buttons {
+            margin-top: 20px;
+        }
+        .quiz-title {
+            text-align: right;
+            margin-top: -20px;
+            margin-bottom: -20px;
+            font-size: 70%;
+        }
+        .quiz-title a {
+            color: black;
+        }
+
+/* FROM CATEGORIES */
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            color: #333;
+            font-size: 32px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .category-box {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .category-box:hover {
+            background-color: #f9f9f9;
+        }
+
+        .category-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0; /* Remove the margin-bottom */
+            text-transform: capitalize;
+            color: #555;
+        }
+
+        .category-description {
+            font-size: 14px;
+            color: #888;
+            margin-top: 10px; /* Add margin-top for spacing */
+        }
+
+        .category-link {
+            text-decoration: none;
+        }
+
+        .category-link:hover .category-box {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }

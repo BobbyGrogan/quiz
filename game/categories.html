@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Category Selection</title>
+    <link href="./css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Quiz Category Selection</h1>
+
+    <div class="container">
+    </div>
+
+    <script>
+        // Function to capitalize each word in a string
+        function capitalizeWords(str) {
+            return str.replace(/\b\w/g, match => match.toUpperCase());
+        }
+
+        // Function to create a category box
+        function createCategoryBox(category) {
+            // Create the HTML elements
+            const categoryLink = document.createElement('a');
+            categoryLink.setAttribute('class', 'category-link');
+            categoryLink.setAttribute('href', `quiz.html?name=${category.name}`);
+
+            const categoryBox = document.createElement('div');
+            categoryBox.setAttribute('class', 'category-box');
+
+            const categoryTitle = document.createElement('div');
+            categoryTitle.setAttribute('class', 'category-title');
+            categoryTitle.textContent = capitalizeWords(category.name);
+
+            const categoryDescription = document.createElement('div');
+            categoryDescription.setAttribute('class', 'category-description');
+            categoryDescription.textContent = category.description;
+
+            // Append the elements to the container
+            categoryBox.appendChild(categoryTitle);
+            categoryBox.appendChild(categoryDescription);
+            categoryLink.appendChild(categoryBox);
+            container.appendChild(categoryLink);
+}
+
+        // Retrieve the categories
+        const container = document.querySelector('.container');
+        fetch('./php/get_categories.php')
+            .then(response => response.json())
+            .then(categories => {
+                // Create a category box for each category
+                categories.forEach(category => createCategoryBox(category));
+            })
+            .catch(error => {
+                console.error('Error fetching categories:', error);
+            });
+    </script>
+</body>
+</html>

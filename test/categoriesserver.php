@@ -20,7 +20,9 @@ while (True) {
 $spawn = socket_accept($socket) or die("Could not accept incoming connection\n");
 $input = socket_read($spawn, 1024) or die("Could not read input\n");
 
+
 $inputupdate = "INTERT INTO `test_logs` (cat_id, q_id, chosen_a_id, correct_a_id) VALUES ($category, $question, $chosen, $correct)";
+
 
 
 $query = "SELECT * FROM categories WHERE cat_id=$input";

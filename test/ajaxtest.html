@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Category Selection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .category-box {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .category-box:hover {
+            background-color: #f9f9f9;
+        }
+
+        .category-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .category-description {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+  <h1>Quiz Category Selection</h1>
+
+  <div class="container">
+      <a class="category-link" href="quiz.html?name=1">
+          <div class="category-box">
+              <div class="category-title">Category 1</div>
+              <div class="category-description">Description of Category 1.</div>
+          </div>
+      </a>
+
+      <a class="category-link" href="quiz.html?name=2">
+          <div class="category-box">
+              <div class="category-title">Category 2</div>
+              <div class="category-description">Description of Category 2.</div>
+          </div>
+      </a>
+
+      <a class="category-link" href="quiz.html?name=3">
+          <div class="category-box">
+              <div class="category-title">Category 3</div>
+              <div class="category-description">Description of Category 3.</div>
+          </div>
+      </a>
+
+      <!-- Add more category boxes as needed -->
+  </div>
+</body>
+</html>
