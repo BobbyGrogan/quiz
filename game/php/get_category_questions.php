@@ -1,19 +1,22 @@
 <?php
+//error_reporting(E_ALL);
+//ini_set('display_errors', 1);
 
 include("./connect.php");
 
 // Get the cat_id from the query parameters
 $cat_id = $_GET['cat_id'];
+$how_many = 15; //$_GET['how_many'];
 
 // SQL query to fetch the q_id values from cat__$cat_id table
-$qidQuery = "SELECT q_id FROM cat__$cat_id";
+$qidQuery = "SELECT q_id FROM cat__$cat_id ORDER BY RAND() LIMIT $how_many";
 
 // Execute the query
 $qidResult = $conn->query($qidQuery);
 
 // Check if the query execution was successful
 if ($qidResult === false) {
-    die("Error executing query: " . $conn->error);
+    die("Error executing qidQuery: " . $conn->error);
 }
 
 // Array to store the q_id values
@@ -39,7 +42,7 @@ foreach ($qids as $q_id) {
 
     // Check if the query execution was successful
     if ($questionResult === false) {
-        die("Error executing query: " . $conn->error);
+        die("Error executing questionQuery: " . $conn->error);
     }
 
     // Fetch the question
@@ -53,12 +56,14 @@ foreach ($qids as $q_id) {
         // Generate the SQL query to fetch the a_id values and is_true values from qans__$q_id table
         $aIdQuery = "SELECT a_id, is_true FROM $qansTableName";
 
+        //echo $aIdQuery . "<br>";
+
         // Execute the query
         $aIdResult = $conn->query($aIdQuery);
 
         // Check if the query execution was successful
         if ($aIdResult === false) {
-            die("Error executing query: " . $conn->error);
+            die("Error executing aIdQuery: " . $conn->error);
         }
 
         // Fetch the a_id values and is_true values
@@ -70,12 +75,14 @@ foreach ($qids as $q_id) {
                 // Generate the SQL query to fetch the answer from the answers table
                 $answerQuery = "SELECT answer FROM answers WHERE a_id = $a_id";
 
+                //echo $answerQuery . "<br>";
+
                 // Execute the query
                 $answerResult = $conn->query($answerQuery);
 
                 // Check if the query execution was successful
                 if ($answerResult === false) {
-                    die("Error executing query: " . $conn->error);
+                    die("Error executing answerQuery: " . $conn->error);
                 }
 
                 // Fetch the answer
@@ -127,6 +134,12 @@ foreach ($questions as $questionData) {
     }
 }
 
-echo json_encode($quizData);
+// Output the quiz data as JSON
+$jsonData = json_encode($quizData);
 
+if ($jsonData === false) {
+    die("Error encoding quizData to JSON: " . json_last_error_msg());
+}
 
+echo $jsonData;
+?>

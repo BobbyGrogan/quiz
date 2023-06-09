@@ -3,7 +3,7 @@
 include("./connect.php");
 
 // Fetch categories from the database
-$sql = 'SELECT * FROM categories WHERE num_of_questions > 10';
+$sql = 'SELECT * FROM categories WHERE `include` = 1';
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {

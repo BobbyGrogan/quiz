@@ -3,48 +3,57 @@
 <head>
     <title>Quiz</title>
     <link href="./css/styles.css" rel="stylesheet">
+    <style>
+        .timer {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
     <script>
         window.addEventListener('DOMContentLoaded', function() {
           // Get the URL parameter 'name'
           const urlParams = new URLSearchParams(window.location.search);
           const categoryName = urlParams.get('name');
-    
+
           // Capitalize each word in the category name
           const capitalizedCategoryName = categoryName
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
-    
+
           // Create the HTML element
           const link = document.createElement('a');
           link.href = `quiz.html?name=${categoryName}`;
           const heading = document.createElement('p');
           heading.textContent = capitalizedCategoryName;
           link.appendChild(heading);
-    
+
           // Find the quiz-title div
           const quizTitleDiv = document.querySelector('.quiz-title');
-    
+
           // Append the element to the quiz-title div
           quizTitleDiv.appendChild(link);
         });
     </script>
 </head>
-<body>
-    <div class="navbar">
+
+<body class="quiz-body">
+    <div class="navbar navbar-quiz">
         <a href="./categories.html">All Categories</a>
     </div>
 
     <div class="quiz-container">
         <div class="quiz-title"></div>
         <div id="question-container"></div>
-        <div class="quiz-progress">
-            <span id="current-question">0</span> / <span id="total-questions">0</span>
-        </div>
+        <div id="progress-blocks-container"></div> <!-- New container for progress blocks -->
         <div id="quiz-feedback" style="display: none;"></div>
     </div>
 
     <script>
+        const how_many = 15;
+        const timerSeconds = 10;
+        let timerInterval;
+
         // Retrieve the value of the 'name' variable from the query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const name = urlParams.get('name');
@@ -57,6 +66,7 @@
             if (xhr.readyState === 4 && xhr.status === 200) {
                 // Handle the response here
                 const cat_id = xhr.responseText;
+                console.log('cat_id:', cat_id);
                 loadQuiz(cat_id);
             }
         };
@@ -65,12 +75,12 @@
         // Function to load the quiz
         function loadQuiz(cat_id) {
             const xhr2 = new XMLHttpRequest();
-            xhr2.open('GET', './php/get_category_questions.php?cat_id=' + cat_id, true);
+            xhr2.open('GET', './php/get_category_questions.php?cat_id=' + cat_id + '&how_many=' + how_many, true);
             xhr2.onreadystatechange = function() {
                 if (xhr2.readyState === 4 && xhr2.status === 200) {
                     // Handle the response here
                     const quizJson = JSON.parse(xhr2.responseText);
-                    console.log(quizJson);
+                    console.log('quizJson:', quizJson);
                     initializeQuiz(quizJson);
                 }
             };
@@ -82,16 +92,24 @@
             // Shuffle the quizJson array to randomize the order of questions
             shuffle(quizJson);
             const questionContainer = document.getElementById('question-container');
-            const totalQuestions = 10; //quizJson.length;
-            const currentQuestionElement = document.getElementById('current-question');
-            const totalQuestionsElement = document.getElementById('total-questions');
+            const totalQuestions = 5; //quizJson.length;
+            const progressBlocksContainer = document.getElementById('progress-blocks-container')
+
             const quizFeedbackElement = document.getElementById('quiz-feedback');
             let currentQuestionIndex = 0;
             let correctAnswersCount = 0;
 
+            // Dynamically create progress blocks
+            for (let i = 0; i < totalQuestions; i++) {
+                const progressBlock = document.createElement('div');
+                progressBlock.className = 'progress-block';
+                progressBlock.style.setProperty('--block-index', i);
+                progressBlocksContainer.appendChild(progressBlock);
+            }
+
             function renderQuestion() {
                 const question = quizJson[currentQuestionIndex];
-                console.log("Current question: ", question);
+                console.log('Current question:', question);
                 question.startTime = new Date();
 
                 const options = question.options.map((option) => {
@@ -137,8 +155,6 @@
                 `;
 
                 questionContainer.innerHTML = questionHtml;
-                currentQuestionElement.textContent = currentQuestionIndex + 1;
-                totalQuestionsElement.textContent = totalQuestions;
                 quizFeedbackElement.style.display = 'none';
 
                 // Add event listener to all answer options
@@ -146,9 +162,28 @@
                 answerInputs.forEach((input) => {
                     input.addEventListener('change', evaluateAnswer);
                 });
+
+                // Start the timer
+                const timerElement = document.createElement('div');
+                timerElement.className = 'timer';
+                questionContainer.appendChild(timerElement);
+
+                let secondsLeft = timerSeconds;
+                timerElement.textContent = `Time Left: ${secondsLeft} seconds`;
+
+                timerInterval = setInterval(function () {
+                    secondsLeft--;
+                    timerElement.textContent = `Time Left: ${secondsLeft} seconds`;
+
+            if (secondsLeft <= 0) {
+                outOfTime();
             }
+        }, 1000);
+    }
 
             function evaluateAnswer() {
+                clearInterval(timerInterval); // Stop the timer
+
                 const selectedAnswer = document.querySelector('input[name="answer"]:checked').value;
 
                 const selectedInput = document.querySelector('input[name="answer"]:checked');
@@ -179,18 +214,22 @@
                     input.disabled = true;
                 });
 
+                // Update the progress block
+                const progressBlock = document.querySelectorAll('.progress-block')[currentQuestionIndex];
+                progressBlock.style.backgroundColor = selectedAnswer === '1' ? '#597C31' : '#FE4300';
+
                 // Execute the update_questions_log.php script
                 // Execute the insert_questions_log.php script
-                    const xhr4 = new XMLHttpRequest();
-                    const params = `question=${encodeURIComponent(question.question)}&hitAnswer=${encodeURIComponent(hitAnswer)}&correctAnswer=${encodeURIComponent(correctAnswer)}&category=${encodeURIComponent(category)}&timeTaken=${encodeURIComponent(timeTaken)}&questionIndex=${encodeURIComponent(questionIndex)}`;
-                    xhr4.open('GET', `./php/update_questions_log.php?${params}`, true);
-                    xhr4.onreadystatechange = function() {
-                        if (xhr4.readyState === 4 && xhr4.status === 200) {
-                            console.log(xhr4.responseText); // Log the response if needed
-                        }
-                    };
-                    xhr4.send();
-
+                const xhr4 = new XMLHttpRequest();
+                const params = `question=${encodeURIComponent(question.question)}&hitAnswer=${encodeURIComponent(hitAnswer)}&correctAnswer=${encodeURIComponent(correctAnswer)}&category=${encodeURIComponent(category)}&timeTaken=${encodeURIComponent(timeTaken)}&questionIndex=${encodeURIComponent(questionIndex)}`;
+                console.log(params);
+                xhr4.open('GET', `./php/update_questions_log.php?${params}`, true);
+                xhr4.onreadystatechange = function () {
+                    if (xhr4.readyState === 4 && xhr4.status === 200) {
+                        console.log(xhr4.responseText); // Log the response if needed
+                    }
+                };
+                xhr4.send();
 
                 setTimeout(function () {
                     currentQuestionIndex++;
@@ -202,11 +241,86 @@
                 }, 1000); // Wait for 0.5 seconds before moving to the next question
             }
 
+            function outOfTime() {
+                clearInterval(timerInterval); // Stop the timer
+
+                const question = quizJson[currentQuestionIndex];
+                const correctAnswer = question.options.find((option) => option === question.correct_answer);
+                const category = name;
+                const timeTaken = new Date() - question.startTime;
+                const questionIndex = currentQuestionIndex; // Get the question index
+
+                // Set the selected answers to red and the correct answer to green
+                const selectedLabels = document.querySelectorAll('input[value="0"] + label');
+                selectedLabels.forEach((label) => {
+                label.style.backgroundColor = '#FE4300aa'; // Set the selected answer to red
+                });
+                const correctLabel = document.querySelector('input[value="1"] + label');
+                correctLabel.style.backgroundColor = '#597C31aa'; // Set the correct answer to green
+
+                // Disable all answer options
+                const answerInputs = questionContainer.querySelectorAll('input[type="radio"]');
+                answerInputs.forEach((input) => {
+                    input.disabled = true;
+                });
+
+                // Update the progress block
+                const progressBlock = document.querySelectorAll('.progress-block')[currentQuestionIndex];
+                progressBlock.style.backgroundColor = '#FE4300';
+
+                // Execute the update_questions_log.php script
+                const xhr4 = new XMLHttpRequest();
+                const questionParam = encodeURIComponent(question.question);
+                const hitAnswerParam = encodeURIComponent("10"); // Assuming this value needs to be encoded
+                const correctAnswerParam = encodeURIComponent(correctAnswer);
+                const categoryParam = encodeURIComponent(category);
+                const timeTakenParam = encodeURIComponent(timeTaken);
+                const questionIndexParam = encodeURIComponent(questionIndex);
+
+                const params = `question=${questionParam}&hitAnswer=${hitAnswerParam}&correctAnswer=${correctAnswerParam}&category=${categoryParam}&timeTaken=${timeTakenParam}&questionIndex=${questionIndexParam}`;
+
+                xhr4.open('GET', `./php/update_questions_log.php?${params}`, true);
+                xhr4.onreadystatechange = function () {
+                if (xhr4.readyState === 4 && xhr4.status === 200) {
+                    console.log(xhr4.responseText); // Log the response if needed
+                }
+                };
+                xhr4.send();
+
+                setTimeout(function () {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < totalQuestions) {
+                    renderQuestion();
+                    } else {
+                    showResults();
+                    }
+                }, 1000); // Wait for 1 second before moving to the next question
+                }
+
+
             function showResults() {
                 const percentage = Math.round((correctAnswersCount / totalQuestions) * 100);
-                const feedback = `You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct)`;
-                questionContainer.innerHTML = feedback;
+                const feedbackContainer = document.createElement('div');
+                feedbackContainer.className = 'feedback-container';
+
+                const feedbackText = document.createElement('p');
+                feedbackText.className = 'feedback-text';
+
+                if (percentage == 100) {
+                    feedbackText.textContent = `Congratulations! You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Great job!`;
+                } else if (percentage >= 60) {
+                    feedbackText.textContent = `Good job! You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Keep up the good work!`;
+                } else if (percentage >= 40) {
+                    feedbackText.textContent = `Not bad! You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Keep practicing to improve your score!`;
+                } else {
+                    feedbackText.textContent = `You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Keep learning and try again!`;
+                }
+
+                feedbackContainer.appendChild(feedbackText);
+                questionContainer.innerHTML = '';
+                questionContainer.appendChild(feedbackContainer);
             }
+
 
             // Fisher-Yates shuffle algorithm
             function shuffle(array) {
@@ -225,4 +339,5 @@
         }
     </script>
 </body>
+
 </html>
