@@ -17,11 +17,15 @@ if ($conn->connect_error) {
 $query = "SELECT q_id FROM questions";
 $result = $conn->query($query);
 
+$inc = 0;
+
 // Check if any rows were returned
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $q_id = $row["q_id"];
         $qans_table = "qans__" . $q_id;
+        $inc += 1;
+        //echo $q_id . "hello<br>";
         
         // Get the number of rows in the qans__ table
         $qans_query = "SELECT COUNT(*) as num_rows FROM $qans_table";

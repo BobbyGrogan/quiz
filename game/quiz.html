@@ -39,7 +39,7 @@
 
 <body class="quiz-body">
     <div class="navbar navbar-quiz">
-        <a href="./categories.html">All Categories</a>
+        <a href="./index.html">All Categories</a>
     </div>
 
     <div class="quiz-container">
@@ -92,7 +92,7 @@
             // Shuffle the quizJson array to randomize the order of questions
             shuffle(quizJson);
             const questionContainer = document.getElementById('question-container');
-            const totalQuestions = 5; //quizJson.length;
+            const totalQuestions = 8; //quizJson.length;
             const progressBlocksContainer = document.getElementById('progress-blocks-container')
 
             const quizFeedbackElement = document.getElementById('quiz-feedback');
@@ -219,10 +219,9 @@
                 progressBlock.style.backgroundColor = selectedAnswer === '1' ? '#597C31' : '#FE4300';
 
                 // Execute the update_questions_log.php script
-                // Execute the insert_questions_log.php script
                 const xhr4 = new XMLHttpRequest();
                 const params = `question=${encodeURIComponent(question.question)}&hitAnswer=${encodeURIComponent(hitAnswer)}&correctAnswer=${encodeURIComponent(correctAnswer)}&category=${encodeURIComponent(category)}&timeTaken=${encodeURIComponent(timeTaken)}&questionIndex=${encodeURIComponent(questionIndex)}`;
-                console.log(params);
+                //console.log(params);
                 xhr4.open('GET', `./php/update_questions_log.php?${params}`, true);
                 xhr4.onreadystatechange = function () {
                     if (xhr4.readyState === 4 && xhr4.status === 200) {
@@ -252,11 +251,11 @@
 
                 // Set the selected answers to red and the correct answer to green
                 const selectedLabels = document.querySelectorAll('input[value="0"] + label');
-                selectedLabels.forEach((label) => {
-                label.style.backgroundColor = '#FE4300aa'; // Set the selected answer to red
-                });
+                //selectedLabels.forEach((label) => {
+                //label.style.backgroundColor = '#FE4300aa'; // Set the selected answer to red
+                //});
                 const correctLabel = document.querySelector('input[value="1"] + label');
-                correctLabel.style.backgroundColor = '#597C31aa'; // Set the correct answer to green
+                correctLabel.style.backgroundColor = '#597C31bb'; // Set the correct answer to green
 
                 // Disable all answer options
                 const answerInputs = questionContainer.querySelectorAll('input[type="radio"]');
@@ -271,7 +270,7 @@
                 // Execute the update_questions_log.php script
                 const xhr4 = new XMLHttpRequest();
                 const questionParam = encodeURIComponent(question.question);
-                const hitAnswerParam = encodeURIComponent("10"); // Assuming this value needs to be encoded
+                const hitAnswerParam = encodeURIComponent("test"); // Assuming this value needs to be encoded
                 const correctAnswerParam = encodeURIComponent(correctAnswer);
                 const categoryParam = encodeURIComponent(category);
                 const timeTakenParam = encodeURIComponent(timeTaken);

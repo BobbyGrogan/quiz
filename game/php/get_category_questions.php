@@ -8,16 +8,25 @@ include("./connect.php");
 $cat_id = $_GET['cat_id'];
 $how_many = 15; //$_GET['how_many'];
 
-// SQL query to fetch the q_id values from cat__$cat_id table
-$qidQuery = "SELECT q_id FROM cat__$cat_id ORDER BY RAND() LIMIT $how_many";
+// Prepare the SQL statement to fetch the q_id values from cat__$cat_id table
+$qidQuery = "SELECT q_id FROM `cat__$cat_id` ORDER BY RAND() LIMIT ?";
+
+// Prepare the statement
+$stmt = $conn->prepare($qidQuery);
+
+// Bind the parameter
+$stmt->bind_param("i", $how_many);
 
 // Execute the query
-$qidResult = $conn->query($qidQuery);
+$stmt->execute();
 
 // Check if the query execution was successful
-if ($qidResult === false) {
+if ($stmt === false) {
     die("Error executing qidQuery: " . $conn->error);
 }
+
+// Get the result
+$qidResult = $stmt->get_result();
 
 // Array to store the q_id values
 $qids = array();
@@ -34,16 +43,25 @@ $questions = array();
 
 // Fetch the questions, a_id values, answer values, and is_true values
 foreach ($qids as $q_id) {
-    // Generate the SQL query to fetch the question from the questions table
-    $questionQuery = "SELECT question FROM questions WHERE q_id = $q_id";
+    // Prepare the SQL statement to fetch the question from the questions table
+    $questionQuery = "SELECT question FROM questions WHERE q_id = ?";
+
+    // Prepare the statement
+    $stmt = $conn->prepare($questionQuery);
+
+    // Bind the parameter
+    $stmt->bind_param("i", $q_id);
 
     // Execute the query
-    $questionResult = $conn->query($questionQuery);
+    $stmt->execute();
 
     // Check if the query execution was successful
-    if ($questionResult === false) {
+    if ($stmt === false) {
         die("Error executing questionQuery: " . $conn->error);
     }
+
+    // Get the result
+    $questionResult = $stmt->get_result();
 
     // Fetch the question
     if ($questionResult->num_rows > 0) {
@@ -51,20 +69,24 @@ foreach ($qids as $q_id) {
         $question = $questionRow['question'];
 
         // Generate the table name for qans__$q_id
-        $qansTableName = "qans__$q_id";
+        $qansTableName = "qans__" . $q_id;
 
-        // Generate the SQL query to fetch the a_id values and is_true values from qans__$q_id table
-        $aIdQuery = "SELECT a_id, is_true FROM $qansTableName";
+        // Prepare the SQL statement to fetch the a_id values and is_true values from qans__$q_id table
+        $aIdQuery = "SELECT a_id, is_true FROM `$qansTableName`";
 
-        //echo $aIdQuery . "<br>";
+        // Prepare the statement
+        $stmt = $conn->prepare($aIdQuery);
 
         // Execute the query
-        $aIdResult = $conn->query($aIdQuery);
+        $stmt->execute();
 
         // Check if the query execution was successful
-        if ($aIdResult === false) {
+        if ($stmt === false) {
             die("Error executing aIdQuery: " . $conn->error);
         }
+
+        // Get the result
+        $aIdResult = $stmt->get_result();
 
         // Fetch the a_id values and is_true values
         if ($aIdResult->num_rows > 0) {
@@ -72,18 +94,25 @@ foreach ($qids as $q_id) {
                 $a_id = $aIdRow['a_id'];
                 $is_true = $aIdRow['is_true'];
 
-                // Generate the SQL query to fetch the answer from the answers table
-                $answerQuery = "SELECT answer FROM answers WHERE a_id = $a_id";
+                // Prepare the SQL statement to fetch the answer from the answers table
+                $answerQuery = "SELECT answer FROM answers WHERE a_id = ?";
 
-                //echo $answerQuery . "<br>";
+                // Prepare the statement
+                $stmt = $conn->prepare($answerQuery);
+
+                // Bind the parameter
+                $stmt->bind_param("i", $a_id);
 
                 // Execute the query
-                $answerResult = $conn->query($answerQuery);
+                $stmt->execute();
 
                 // Check if the query execution was successful
-                if ($answerResult === false) {
+                if ($stmt === false) {
                     die("Error executing answerQuery: " . $conn->error);
                 }
+
+                // Get the result
+                $answerResult = $stmt->get_result();
 
                 // Fetch the answer
                 if ($answerResult->num_rows > 0) {
@@ -102,6 +131,9 @@ foreach ($qids as $q_id) {
         }
     }
 }
+
+// Close the prepared statement
+$stmt->close();
 
 // Close the database connection
 $conn->close();
