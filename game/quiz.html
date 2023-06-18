@@ -92,7 +92,7 @@
             // Shuffle the quizJson array to randomize the order of questions
             shuffle(quizJson);
             const questionContainer = document.getElementById('question-container');
-            const totalQuestions = 8; //quizJson.length;
+            const totalQuestions = 20; //quizJson.length;
             const progressBlocksContainer = document.getElementById('progress-blocks-container')
 
             const quizFeedbackElement = document.getElementById('quiz-feedback');
@@ -102,8 +102,10 @@
             // Dynamically create progress blocks
             for (let i = 0; i < totalQuestions; i++) {
                 const progressBlock = document.createElement('div');
+                progressBlock.innerHTML = (i+1);
                 progressBlock.className = 'progress-block';
                 progressBlock.style.setProperty('--block-index', i);
+                progressBlock.id = "done-test";
                 progressBlocksContainer.appendChild(progressBlock);
             }
 
@@ -217,6 +219,8 @@
                 // Update the progress block
                 const progressBlock = document.querySelectorAll('.progress-block')[currentQuestionIndex];
                 progressBlock.style.backgroundColor = selectedAnswer === '1' ? '#597C31' : '#FE4300';
+                progressBlock.style.color = '#fff';
+
 
                 // Execute the update_questions_log.php script
                 const xhr4 = new XMLHttpRequest();
@@ -300,10 +304,28 @@
             function showResults() {
                 const percentage = Math.round((correctAnswersCount / totalQuestions) * 100);
                 const feedbackContainer = document.createElement('div');
-                feedbackContainer.className = 'feedback-container';
+                feedbackContainer.className = 'finished';
+
+                const feedbackOther = document.createElement('div');
+                feedbackOther.className = 'feedback-other';
+                feedbackOther.textContent = "";
+
+                const tryAgainA = document.createElement('a');
+                tryAgainA.className = 'try-again';
+                tryAgainA.href = `quiz.html?name=${urlParams.get('name')}`;
+                const tryAgainDiv = document.createElement('div');
+                tryAgainDiv.textContent = "Try Again";
+                feedbackOther.appendChild(tryAgainA);
+                tryAgainA.appendChild(tryAgainDiv);
 
                 const feedbackText = document.createElement('p');
-                feedbackText.className = 'feedback-text';
+                feedbackText.className = 'feedback';
+
+                for (let i = 0; i < totalQuestions; i++) {
+                    const progressBlock = document.querySelectorAll('.progress-block')[i];
+                    progressBlock.style.fontSize = "50px";
+                    progressBlock.style.height = '60px';
+                }
 
                 if (percentage == 100) {
                     feedbackText.textContent = `Congratulations! You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Great job!`;
@@ -316,6 +338,7 @@
                 }
 
                 feedbackContainer.appendChild(feedbackText);
+                feedbackContainer.appendChild(feedbackOther);
                 questionContainer.innerHTML = '';
                 questionContainer.appendChild(feedbackContainer);
             }

@@ -41,7 +41,7 @@ html {
             padding: 20px;
             text-align: center;
             margin: 0 auto;
-            max-width: 1200px; /* Increased the max-width for a bigger question container */
+            max-width: 1400px; /* Increased the max-width for a bigger question container */
         }
         
         .quiz-container h2 {
@@ -218,15 +218,58 @@ html {
         
                 /* CSS for the progress blocks */
                 .progress-block {
+                    font-size: 40%;
+                    margin: 0px 5px 0px 5px;
                     flex-grow: 1;
                     height: 20px;
                     background-color: #ddd;
-                    border-radius: 0px;
+                    border-radius: 5px;
                     transition: width 0.5s ease, background-color 0.5s ease; /* Smooth transition for width and background-color change */
                     transition-delay: calc(var(--block-index) * 0.2s); /* Add delay for each block */
                 }
+
+                /* .finished-block {
+                    height: 100px;
+                } */
         
                 /* CSS for the question container */
                 #question-container {
                     margin-bottom: 10px;
                 }
+
+
+                .go-white {
+                    color: white;
+                }
+
+        .timer { background-color: #ddd; color: red; }
+
+
+        /* conclusion page */
+
+        .finished {
+            background-color: red;
+        }
+
+        .feedback-other {
+            width: 100px; 
+            height: 200px;
+            text-align: center;
+        }
+
+        .feedback {
+            background-color: #e7afaf;
+            padding: 20px;
+        }
+
+        .try-again {
+            width: 400px;
+            align-items: center;
+        }
+
+        .try-again div {
+            background-color: blue;
+            text-align: center;
+            height: 200px;
+            width: 500px;
+        }

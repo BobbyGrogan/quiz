@@ -177,11 +177,11 @@ function handleAnswers($wrongs, $conn) {
 
         $itemResult = array();
         
-        if (is_numeric($item)) {
+        /* if (is_numeric($item)) {
             $query = "SELECT a_id, answer FROM answers WHERE a_id = $item";
-        } else {
+        } else { */
             $query = "SELECT a_id, answer FROM answers WHERE LOWER(answer) = LOWER('$item')";
-        }
+        //} 
 
         $queryResult = $conn->query($query);
 
