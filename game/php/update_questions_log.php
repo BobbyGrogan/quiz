@@ -51,6 +51,23 @@ if ($sql->execute()) {
     echo "Error: " . $conn->error;
 }
 
+# SHOULD HAVE STUFF LIKE THIS BE LOGGED BEFORE THE QUESTION IS ANSWERED
+# $update_cat_stmt1 = "UPDATE `cat__$real_category` SET $asked = $asked + 1 WHERE `q_id` = $real_question";
+# $update_cats_stmt1 = "UPDATE `categories` SET $asked = $asked + 1 WHERE `cat_id` = $real_category"
+# $update_ans_stmt = "UPDATE answers SET $asked = $asked + 1 WHERE `aid_id` = $AIDS";
+# $update_qans_stmt = "UPDATE `qans__$real_category` SET $asked = $asked + 1 WHERE `a_id` = $AIDS";
+# $UPDATE `questions` SET $asked = $asked + 1 WHERE `q_id` = $real_question";
+
+
+if ($real_selected_a_id == $real_correct_a_id) {
+    $update_cat_stmt2 = "UPDATE `cat__$real_category` SET correct = correct + 1 WHERE `q_id` = $real_question";
+    $conn->query($update_cat_stmt2);
+    $update_cats_stmt2 = "UPDATE `categories` SET correct = correct + 1 WHERE `cat_id` = $real_category";
+    $update_ans_stmt = "UPDATE `answers` SET correct = correct + 1 WHERE `aid_id` = $real_selected_a_id";
+    $update_qans_stmt = "UPDATE `qans__$real_category` SET correct = correct + 1 WHERE `a_id` = $real_selected_a_id";
+    $update_q_stmt = "UPDATE `questions` SET correct = correct + 1 WHERE `q_id` = $real_question";
+}
+
 // Close the database connection
 $conn->close();
 ?>

@@ -92,7 +92,7 @@
             // Shuffle the quizJson array to randomize the order of questions
             shuffle(quizJson);
             const questionContainer = document.getElementById('question-container');
-            const totalQuestions = 20; //quizJson.length;
+            const totalQuestions = 4; //quizJson.length;
             const progressBlocksContainer = document.getElementById('progress-blocks-container')
 
             const quizFeedbackElement = document.getElementById('quiz-feedback');
@@ -270,6 +270,7 @@
                 // Update the progress block
                 const progressBlock = document.querySelectorAll('.progress-block')[currentQuestionIndex];
                 progressBlock.style.backgroundColor = '#FE4300';
+                progressBlock.style.color = '#fff';
 
                 // Execute the update_questions_log.php script
                 const xhr4 = new XMLHttpRequest();
