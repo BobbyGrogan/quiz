@@ -44,7 +44,7 @@ $questions = array();
 // Fetch the questions, a_id values, answer values, and is_true values
 foreach ($qids as $q_id) {
     // Prepare the SQL statement to fetch the question from the questions table
-    $questionQuery = "SELECT question FROM questions WHERE q_id = ?";
+    $questionQuery = "SELECT question FROM questions WHERE q_id = ? AND `codes` = 1";
 
     // Prepare the statement
     $stmt = $conn->prepare($questionQuery);
@@ -95,7 +95,7 @@ foreach ($qids as $q_id) {
                 $is_true = $aIdRow['is_true'];
 
                 // Prepare the SQL statement to fetch the answer from the answers table
-                $answerQuery = "SELECT answer FROM answers WHERE a_id = ?";
+                $answerQuery = "SELECT answer FROM answers WHERE a_id = ? AND codes = 1";
 
                 // Prepare the statement
                 $stmt = $conn->prepare($answerQuery);
