@@ -50,14 +50,15 @@
     </div>
 
     <script>
-        const how_many = 15;
+        const how_many = 10;
         const timerSeconds = 10;
+        const delayBetween = 1000;
         let timerInterval;
 
         // Retrieve the value of the 'name' variable from the query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const name = urlParams.get('name');
-        console.log('name:', name);
+        console.log('Quiz category: ', name);
 
         // Use the retrieved value to make an AJAX request to fetch the category's cat_id
         const xhr = new XMLHttpRequest();
@@ -66,7 +67,7 @@
             if (xhr.readyState === 4 && xhr.status === 200) {
                 // Handle the response here
                 const cat_id = xhr.responseText;
-                console.log('cat_id:', cat_id);
+                //console.log('cat_id:', cat_id);
                 loadQuiz(cat_id);
             }
         };
@@ -80,7 +81,7 @@
                 if (xhr2.readyState === 4 && xhr2.status === 200) {
                     // Handle the response here
                     const quizJson = JSON.parse(xhr2.responseText);
-                    console.log('quizJson:', quizJson);
+                    console.log('Quiz loaded with ', how_many, " questions!");
                     initializeQuiz(quizJson);
                 }
             };
@@ -92,7 +93,7 @@
             // Shuffle the quizJson array to randomize the order of questions
             shuffle(quizJson);
             const questionContainer = document.getElementById('question-container');
-            const totalQuestions = 4; //quizJson.length;
+            const totalQuestions = how_many; //quizJson.length;
             const progressBlocksContainer = document.getElementById('progress-blocks-container')
 
             const quizFeedbackElement = document.getElementById('quiz-feedback');
@@ -110,8 +111,9 @@
             }
 
             function renderQuestion() {
+
                 const question = quizJson[currentQuestionIndex];
-                console.log('Current question:', question);
+                console.log('Question #', currentQuestionIndex+1);
                 question.startTime = new Date();
 
                 const options = question.options.map((option) => {
@@ -133,7 +135,7 @@
                     const correctAnswer = randomizedOptions.splice(correctAnswerIndex, 1)[0];
 
                     // Shuffle the remaining options again
-                    randomizedOptions = shuffle(randomizedOptions);
+                    randomizedOptions = shuffle(randomizedOptions).slice(0, 3);
 
                     // Generate a random index to insert the correct answer (within the first four positions)
                     const randomIndex = Math.floor(Math.random() * 4);
@@ -159,6 +161,25 @@
                 questionContainer.innerHTML = questionHtml;
                 quizFeedbackElement.style.display = 'none';
 
+                const currentUrl = new URLSearchParams(window.location.search);
+                const category = urlParams.get('name');
+
+                const xhr4 = new XMLHttpRequest();
+                var params = `question=${encodeURIComponent(question.question)}&category=${encodeURIComponent(category)}`;
+
+                randomizedOptions.forEach((option, index) => {
+                    params += `&a${index+1}=${encodeURIComponent(option.text)}`;
+                });
+                //console.log(params);
+
+                xhr4.open('GET', `./php/update_before_answered.php?${params}`, true);
+                xhr4.onreadystatechange = function () {
+                    if (xhr4.readyState === 4 && xhr4.status === 200) {
+                        console.log(xhr4.responseText); // Log the response if needed
+                    }
+                };
+                xhr4.send(); 
+
                 // Add event listener to all answer options
                 const answerInputs = questionContainer.querySelectorAll('input[type="radio"]');
                 answerInputs.forEach((input) => {
@@ -170,17 +191,22 @@
                 timerElement.className = 'timer';
                 questionContainer.appendChild(timerElement);
 
+                const timerBar = document.createElement('div');
+                timerBar.className = 'timer-bar';
+                timerElement.appendChild(timerBar);
+
                 let secondsLeft = timerSeconds;
-                timerElement.textContent = `Time Left: ${secondsLeft} seconds`;
+                timerBar.textContent = `Time Left: ${secondsLeft} seconds`;
 
                 timerInterval = setInterval(function () {
+                    timerBar.style.width = `${secondsLeft*10}%`;
                     secondsLeft--;
-                    timerElement.textContent = `Time Left: ${secondsLeft} seconds`;
+                    timerBar.textContent = `Time Left: ${secondsLeft} seconds`;
 
             if (secondsLeft <= 0) {
                 outOfTime();
             }
-        }, 1000);
+        }, delayBetween);
     }
 
             function evaluateAnswer() {
@@ -223,16 +249,16 @@
 
 
                 // Execute the update_questions_log.php script
-                const xhr4 = new XMLHttpRequest();
+                const xhr5 = new XMLHttpRequest();
                 const params = `question=${encodeURIComponent(question.question)}&hitAnswer=${encodeURIComponent(hitAnswer)}&correctAnswer=${encodeURIComponent(correctAnswer)}&category=${encodeURIComponent(category)}&timeTaken=${encodeURIComponent(timeTaken)}&questionIndex=${encodeURIComponent(questionIndex)}`;
                 //console.log(params);
-                xhr4.open('GET', `./php/update_questions_log.php?${params}`, true);
-                xhr4.onreadystatechange = function () {
-                    if (xhr4.readyState === 4 && xhr4.status === 200) {
-                        console.log(xhr4.responseText); // Log the response if needed
+                xhr5.open('GET', `./php/update_questions_log.php?${params}`, true);
+                xhr5.onreadystatechange = function () {
+                    if (xhr5.readyState === 4 && xhr5.status === 200) {
+                        console.log(xhr5.responseText); // Log the response if needed
                     }
                 };
-                xhr4.send();
+                xhr5.send();
 
                 setTimeout(function () {
                     currentQuestionIndex++;
@@ -241,7 +267,7 @@
                     } else {
                         showResults();
                     }
-                }, 1000); // Wait for 0.5 seconds before moving to the next question
+                }, delayBetween); 
             }
 
             function outOfTime() {

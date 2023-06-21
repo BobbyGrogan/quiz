@@ -242,9 +242,63 @@ html {
                     color: white;
                 }
 
-        .timer { background-color: #ddd; color: red; }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+                .timer {
+                    position: relative;
+                    height: 30px;
+                    width: 50%;
+                    background-color: black;
+                    margin-bottom: 10px;
+                    z-index: 20;
+                  }
+                  
+                  .timer-bar {
+                    width: 100%;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    height: 100%;
+                    background-color: #ff0000;
+                    transition: width 1s linear;
+                    z-index: 30;
+                  }
+                  
+                  .timer-text {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 18px;
+                    color: #000;
+                  }
+                  
+                  
+
+
+
+
+
+
+
+
+
+
+
+
+                  
         /* conclusion page */
 
         .finished {

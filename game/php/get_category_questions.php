@@ -6,7 +6,7 @@ include("./connect.php");
 
 // Get the cat_id from the query parameters
 $cat_id = $_GET['cat_id'];
-$how_many = 15; //$_GET['how_many'];
+$how_many = $_GET['how_many'];
 
 // Prepare the SQL statement to fetch the q_id values from cat__$cat_id table
 $qidQuery = "SELECT q_id FROM `cat__$cat_id` ORDER BY RAND() LIMIT ?";

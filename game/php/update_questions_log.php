@@ -45,12 +45,6 @@ $sql = $conn->prepare("INSERT INTO logs__questions (`user_ip`, `selected_a_id`, 
         VALUES (?, ?, ?, ?, ?, ?, ?)");
 $sql->bind_param("siisiii", $userIP, $real_selected_a_id, $real_correct_a_id, $timeTaken, $real_question, $real_category, $questionIndex);
 
-if ($sql->execute()) {
-    echo "Insertion successful";
-} else {
-    echo "Error: " . $conn->error;
-}
-
 # SHOULD HAVE STUFF LIKE THIS BE LOGGED BEFORE THE QUESTION IS ANSWERED
 # $update_cat_stmt1 = "UPDATE `cat__$real_category` SET $asked = $asked + 1 WHERE `q_id` = $real_question";
 # $update_cats_stmt1 = "UPDATE `categories` SET $asked = $asked + 1 WHERE `cat_id` = $real_category"
@@ -62,10 +56,29 @@ if ($sql->execute()) {
 if ($real_selected_a_id == $real_correct_a_id) {
     $update_cat_stmt2 = "UPDATE `cat__$real_category` SET correct = correct + 1 WHERE `q_id` = $real_question";
     $conn->query($update_cat_stmt2);
+
     $update_cats_stmt2 = "UPDATE `categories` SET correct = correct + 1 WHERE `cat_id` = $real_category";
-    $update_ans_stmt = "UPDATE `answers` SET correct = correct + 1 WHERE `aid_id` = $real_selected_a_id";
-    $update_qans_stmt = "UPDATE `qans__$real_category` SET correct = correct + 1 WHERE `a_id` = $real_selected_a_id";
+    $conn->query($update_cats_stmt2); 
+
+    $update_ans_stmt = "UPDATE `answers` SET q_correct = q_correct + 1 WHERE `a_id` = $real_selected_a_id";
+    $conn->query($update_ans_stmt);
+
+    $update_qans_stmt = "UPDATE `qans__$real_question` SET correct = correct + 1 WHERE `a_id` = $real_selected_a_id";
+    $conn->query($update_qans_stmt);
+
     $update_q_stmt = "UPDATE `questions` SET correct = correct + 1 WHERE `q_id` = $real_question";
+    $conn->query($update_q_stmt);
+}
+
+if ($real_selected_a_id == 10) {
+    $update_qans_oot_stmt = "UPDATE `qans__$real_question` SET asked = asked + 1 WHERE `a_id` = 10";
+    $conn->query($update_qans_oot_stmt);
+}
+
+if ($sql->execute()) {
+    echo "Insertion Post-Answer Sucessful!";
+} else {
+    echo "Error: " . $conn->error;
 }
 
 // Close the database connection
