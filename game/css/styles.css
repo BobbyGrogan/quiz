@@ -6,6 +6,7 @@
     --back-color: #9EB28F;
     --body-color: #f4f4f4;
     --nav-backcolor: #005172;
+    --timer-height: 30px;
 }
   
 html {
@@ -19,7 +20,7 @@ html {
             width: 70%;
             margin-left: 15%;
             padding: 20px;
-            font-size: 200%;
+            font-size: 2em; 
         }
         
         .navbar-quiz {
@@ -32,6 +33,11 @@ html {
             color: #fff;
             text-decoration: none;
             margin-right: 10px;
+            transition: font-size 0.5s ease;
+        }
+
+        .navbar-quiz a:hover {
+            font-size: 101%;
         }
         
         .quiz-container {
@@ -119,6 +125,11 @@ html {
             margin-bottom: -20px;
             font-size: 70%;
         }
+
+        .quiz-title a:hover {
+            font-size: 101%;
+        }
+
         .quiz-title a {
             color: black;
         }
@@ -209,6 +220,7 @@ html {
         
                 /* CSS for the progress blocks container */
                 #progress-blocks-container {
+                    margin-top: 50px;
                     width: 100%;
                     display: flex;
                     justify-content: flex-start;
@@ -218,10 +230,10 @@ html {
         
                 /* CSS for the progress blocks */
                 .progress-block {
-                    font-size: 40%;
+                    font-size: 60%;
                     margin: 0px 5px 0px 5px;
                     flex-grow: 1;
-                    height: 20px;
+                    height: var(--timer-height);
                     background-color: #ddd;
                     border-radius: 5px;
                     transition: width 0.5s ease, background-color 0.5s ease; /* Smooth transition for width and background-color change */
@@ -242,27 +254,17 @@ html {
                     color: white;
                 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 .timer {
+                    margin-top: 40px;
+                    margin-left: 10%;
                     position: relative;
-                    height: 30px;
-                    width: 50%;
-                    background-color: black;
+                    height: var(--timer-height);
+                    width: 80%;
+                    background-color: none;
                     margin-bottom: 10px;
                     z-index: 20;
+                    border: 1px solid black;
+                    border-radius: 5px;
                   }
                   
                   .timer-bar {
@@ -271,12 +273,13 @@ html {
                     top: 0;
                     left: 0;
                     height: 100%;
-                    background-color: #ff0000;
-                    transition: width 1s linear;
+                    background-color: var(--nav-backcolor);
+                    transition: 1s width linear;
                     z-index: 30;
                   }
                   
                   .timer-text {
+                    z-index: 40;
                     position: absolute;
                     top: 50%;
                     left: 50%;
@@ -284,46 +287,54 @@ html {
                     font-size: 18px;
                     color: #000;
                   }
-                  
-                  
-
-
-
-
-
-
-
-
-
-
-
-
-                  
+                            
         /* conclusion page */
 
         .finished {
-            background-color: red;
+            background-color: var(--back-color);
+            padding-bottom: 40px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;  
         }
 
         .feedback-other {
-            width: 100px; 
-            height: 200px;
+            margin-left: none;
+            width: 50%; 
+            margin-left: 25%;
             text-align: center;
+            border-radius: 5px;
         }
 
         .feedback {
-            background-color: #e7afaf;
+            background-color: var(--nav-backcolor);
+            color: var(--body-color);
             padding: 20px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 0px;
+            border-bottom-left-radius: 0px;  
         }
 
         .try-again {
-            width: 400px;
+            text-decoration: none;
             align-items: center;
-        }
-
-        .try-again div {
-            background-color: blue;
+          }
+          
+          .try-again div:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 100%; /* Prevents font size change on hover */
+          }
+          
+          .try-again div {
+            text-decoration: none;
+            background-color: var(--nav-backcolor);
+            color: var(--body-color);
             text-align: center;
-            height: 200px;
-            width: 500px;
-        }
+            width: 100%;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: 0.3s ease;
+          }
+          

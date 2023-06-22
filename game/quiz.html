@@ -145,7 +145,7 @@
                 }
 
                 const questionHtml = `
-                <div class="question">
+                <div class="question" id="question">
                     <p>${question.question}</p>
                     <ul style="list-style: none; padding-left: 0;">
                     ${randomizedOptions.slice(0, 4).map((option, index) => `
@@ -186,28 +186,51 @@
                     input.addEventListener('change', evaluateAnswer);
                 });
 
-                // Start the timer
-                const timerElement = document.createElement('div');
-                timerElement.className = 'timer';
-                questionContainer.appendChild(timerElement);
+                questionContainer.insertBefore(progressBlocksContainer, document.getElementById('question'));
 
+
+                // Create the timer container
+                const timerContainer = document.createElement('div');
+                timerContainer.id = "timer";
+                timerContainer.className = 'timer';
+
+                // Create the timer bar
                 const timerBar = document.createElement('div');
                 timerBar.className = 'timer-bar';
-                timerElement.appendChild(timerBar);
+                timerBar.id = "timer-bar";
+                timerContainer.appendChild(timerBar);
 
-                let secondsLeft = timerSeconds;
-                timerBar.textContent = `Time Left: ${secondsLeft} seconds`;
+                // Create the timer text
+                const timerText = document.createElement('div');
+                timerText.className = 'timer-text';
+                timerContainer.appendChild(timerText);
+
+                // Append the timer container to the questionContainer
+                questionContainer.appendChild(timerContainer);
+                //questionContainer.insertBefore(timerContainer, document.getElementById('question'));
+
+                let secondsLeft = timerSeconds - 1; // Start 1 second ahead
+                //timerText.textContent = `${secondsLeft+1} seconds!`;
+
+                const timerBarWidth = timerContainer.offsetWidth;
 
                 timerInterval = setInterval(function () {
-                    timerBar.style.width = `${secondsLeft*10}%`;
-                    secondsLeft--;
-                    timerBar.textContent = `Time Left: ${secondsLeft} seconds`;
+                // Calculate the new width of the timer bar
+                const newWidth = (secondsLeft / timerSeconds) * 100;
 
-            if (secondsLeft <= 0) {
-                outOfTime();
-            }
-        }, delayBetween);
-    }
+                timerBar.style.width = newWidth + '%';
+
+                timerText.textContent = ` `;
+
+                // Check if the timer has reached zero
+                if (secondsLeft <= -1) {
+                    clearInterval(timerInterval);
+                    outOfTime();
+                    timerBar.style.width = '0%';
+                }
+                secondsLeft--; // Decrement after the width update
+                }, delayBetween);
+                    }
 
             function evaluateAnswer() {
                 clearInterval(timerInterval); // Stop the timer
@@ -223,17 +246,21 @@
                 const category = name;
                 const timeTaken = new Date() - question.startTime;
                 const questionIndex = currentQuestionIndex; // Get the question index
+                const timerContainer  = document.getElementById("timer");
+                const timerBar = document.getElementById('timer-bar');
 
                 if (selectedAnswer === '1') {
                     correctAnswersCount++;
                     const selectedLabel = document.querySelector('input[name="answer"]:checked + label');
                     selectedLabel.style.backgroundColor = '#597C31'; // Set the selected answer to green
+                    //timerBar.style.backgroundColor = "#597C31";
                 } else {
                     const selectedLabel = document.querySelector('input[name="answer"]:checked + label');
                     selectedLabel.style.backgroundColor = '#FE4300'; // Set the selected answer to red
                     const correctLabel = document.querySelector('input[value="1"] + label');
                     correctLabel.style.backgroundColor = '#597C31'; // Set the correct answer to green
                     correctLabel.style.color = '#fff'; // Set the color of the correct input to white
+                    //timerContainer.style.backgroundColor = "#FE4300bb";
                 }
 
                 // Disable all answer options
@@ -278,6 +305,7 @@
                 const category = name;
                 const timeTaken = new Date() - question.startTime;
                 const questionIndex = currentQuestionIndex; // Get the question index
+                const timerContainer  = document.getElementById("timer");
 
                 // Set the selected answers to red and the correct answer to green
                 const selectedLabels = document.querySelectorAll('input[value="0"] + label');
@@ -286,6 +314,8 @@
                 //});
                 const correctLabel = document.querySelector('input[value="1"] + label');
                 correctLabel.style.backgroundColor = '#597C31bb'; // Set the correct answer to green
+
+                timerContainer.style.backgroundColor = "#FE430077";
 
                 // Disable all answer options
                 const answerInputs = questionContainer.querySelectorAll('input[type="radio"]');
@@ -355,13 +385,13 @@
                 }
 
                 if (percentage == 100) {
-                    feedbackText.textContent = `Congratulations! You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Great job!`;
+                    feedbackText.textContent = `Congratulations! You scored ${percentage}% (${correctAnswersCount}/${totalQuestions}). Great job!`;
                 } else if (percentage >= 60) {
-                    feedbackText.textContent = `Good job! You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Keep up the good work!`;
+                    feedbackText.textContent = `Good job! You scored ${percentage}% (${correctAnswersCount}/${totalQuestions}). Keep up the good work!`;
                 } else if (percentage >= 40) {
-                    feedbackText.textContent = `Not bad! You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Keep practicing to improve your score!`;
+                    feedbackText.textContent = `Not bad! You scored ${percentage}% (${correctAnswersCount}/${totalQuestions}). Keep practicing to improve your score!`;
                 } else {
-                    feedbackText.textContent = `You scored ${percentage}% (${correctAnswersCount} out of ${totalQuestions} correct). Keep learning and try again!`;
+                    feedbackText.textContent = `You scored ${percentage}% (${correctAnswersCount}/${totalQuestions}). Keep learning and try again!`;
                 }
 
                 feedbackContainer.appendChild(feedbackText);
